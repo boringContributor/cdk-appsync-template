@@ -7,7 +7,12 @@ import {
   Expiration,
   RemovalPolicy,
 } from '@aws-cdk/core';
-import { Schema, AuthorizationType, GraphqlApi } from '@aws-cdk/aws-appsync';
+import {
+  Schema,
+  AuthorizationType,
+  GraphqlApi,
+  UserPoolDefaultAction,
+} from '@aws-cdk/aws-appsync';
 import { Table, BillingMode, AttributeType } from '@aws-cdk/aws-dynamodb';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import {
@@ -20,20 +25,6 @@ import {
 export class AppsyncCdkAppStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    const api = new GraphqlApi(this, 'Api', {
-      name: 'cdk-appsync-api',
-      schema: Schema.fromAsset('graphql/schema.graphql'),
-      authorizationConfig: {
-        defaultAuthorization: {
-          authorizationType: AuthorizationType.API_KEY,
-          apiKeyConfig: {
-            expires: Expiration.after(Duration.days(365)),
-          },
-        },
-      },
-      xrayEnabled: true,
-    });
 
     const userPool = new UserPool(this, 'cdk-user-pool', {
       selfSignUpEnabled: true,
@@ -59,6 +50,24 @@ export class AppsyncCdkAppStack extends Stack {
 
     const userPoolClient = new UserPoolClient(this, 'UserPoolClient', {
       userPool,
+    });
+
+    const api = new GraphqlApi(this, 'Api', {
+      name: 'cdk-appsync-api',
+      schema: Schema.fromAsset('graphql/schema.graphql'),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AuthorizationType.USER_POOL,
+          userPoolConfig: {
+            userPool: userPool,
+            defaultAction: UserPoolDefaultAction.ALLOW,
+          },
+          apiKeyConfig: {
+            expires: Expiration.after(Duration.days(365)),
+          },
+        },
+      },
+      xrayEnabled: true,
     });
 
     const lambdaHandlers = new Function(this, 'AppSyncHandler', {
