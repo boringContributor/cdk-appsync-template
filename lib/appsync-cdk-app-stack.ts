@@ -21,10 +21,13 @@ import {
   UserPoolClient,
   AccountRecovery,
 } from '@aws-cdk/aws-cognito';
-
 export class AppsyncCdkAppStack extends Stack {
+  private readonly stage: string;
+
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    this.stage = this.node.tryGetContext('stage');
 
     const userPool = new UserPool(this, 'cdk-user-pool', {
       selfSignUpEnabled: true,
@@ -127,6 +130,10 @@ export class AppsyncCdkAppStack extends Stack {
     lambdaHandlers.addEnvironment('CDK_TABLE', table.tableName);
 
     // print deployment information
+    new CfnOutput(this, 'Stage', {
+      value: this.stage,
+    });
+
     new CfnOutput(this, 'UserPoolId', {
       value: userPool.userPoolId,
     });
