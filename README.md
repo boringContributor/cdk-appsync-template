@@ -28,10 +28,14 @@ or for development ease
 npm run watch
 ```
 
-4. Deploy the stack to either dev / test / prod
+4. Deploy the stack to stage (default is dev)
 
 ```sh
-cdk deploy dev/test/prod
+cdk deploy -c stage=test
+```
+
+```sh
+cdk deploy -c stage=prod
 ```
 
 If you want to destroy the stack
