@@ -7,7 +7,7 @@ const app = new App();
 
 const context: string = app.node.tryGetContext('stage');
 
-if (context === 'testing') {
+if (context === 'test') {
   new AppsyncCdkAppStack(app, 'test');
 } else if (context === 'prod') {
   new AppsyncCdkAppStack(app, 'prod');
